@@ -1,13 +1,18 @@
 import axios from "axios";
 
+export const config = {
+  api: {
+    bodyParser: true, // ⬅️ Habilita o processamento automático de JSON no Vercel
+  },
+};
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Método não permitido" });
   }
 
   try {
-    const body = await req.json(); // ⬅️ Solução para o erro de req.body undefined
-    const { amount, description, email, cpf } = body;
+    const { amount, description, email, cpf } = req.body; // ⬅️ Agora req.body funciona corretamente
 
     if (!amount || !email || !cpf) {
       return res.status(400).json({ error: "Dados incompletos" });
