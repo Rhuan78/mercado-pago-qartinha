@@ -1,5 +1,11 @@
 import axios from "axios";
 
+export const config = {
+  api: {
+    bodyParser: true,
+  },
+};
+
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Método não permitido" });
@@ -23,7 +29,10 @@ export default async function handler(req, res) {
 
     return res.status(200).json(mercadoPagoResponse.data);
   } catch (error) {
-    console.error("Erro ao consultar pagamento:", error.response.data);
-    return res.status(500).json({ error: "Erro ao consultar pagamento" });
+    console.error("Erro ao consultar pagamento:", error.response ? error.response.data : error.message);
+    return res.status(500).json({
+      error: "Erro ao consultar pagamento",
+      details: error.response ? error.response.data : error.message,
+    });
   }
 }
