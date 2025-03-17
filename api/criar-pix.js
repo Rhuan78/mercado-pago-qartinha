@@ -8,8 +8,14 @@ export const config = {
 };
 
 export default async function handler(req, res) {
+  // Adiciona suporte a CORS
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  // Trata requisições OPTIONS (pré-flight)
   if (req.method === "OPTIONS") {
-    return res.status(200).send("OK"); // Responde corretamente às requisições OPTIONS
+    return res.status(200).end();
   }
 
   if (req.method !== "POST") {
