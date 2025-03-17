@@ -31,6 +31,13 @@ export default async function handler(req, res) {
 
     const idempotencyKey = uuidv4();
 
+    const { id, point_of_interaction } = mercadoPagoResponse.data;
+
+    const qrCode = point_of_interaction.transaction_data.qr_code;
+    const qrCodeBase64 = point_of_interaction.transaction_data.qr_code_base64;
+
+    return res.status(200).json({ id, qrCode, qrCodeBase64 });
+
     const mercadoPagoResponse = await axios.post(
       "https://api.mercadopago.com/v1/payments",
       {
@@ -53,6 +60,8 @@ export default async function handler(req, res) {
         },
       }
     );
+
+    
 
     return res.status(200).json(mercadoPagoResponse.data);
   } catch (error) {
