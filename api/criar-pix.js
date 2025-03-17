@@ -1,5 +1,5 @@
 import axios from "axios";
-import { v4 as uuidv4 } from "uuid"; // ⬅️ Biblioteca para gerar IDs únicos
+import { v4 as uuidv4 } from "uuid";
 
 export const config = {
   api: {
@@ -8,6 +8,10 @@ export const config = {
 };
 
 export default async function handler(req, res) {
+  if (req.method === "OPTIONS") {
+    return res.status(200).send("OK"); // Responde corretamente às requisições OPTIONS
+  }
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Método não permitido" });
   }
@@ -19,7 +23,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Dados incompletos" });
     }
 
-    const idempotencyKey = uuidv4(); // ⬅️ Gera um identificador único
+    const idempotencyKey = uuidv4();
 
     const mercadoPagoResponse = await axios.post(
       "https://api.mercadopago.com/v1/payments",
@@ -39,7 +43,7 @@ export default async function handler(req, res) {
         headers: {
           Authorization: `Bearer ${process.env.MERCADO_PAGO_ACCESS_TOKEN}`,
           "Content-Type": "application/json",
-          "X-Idempotency-Key": idempotencyKey, // ⬅️ Adiciona o identificador único
+          "X-Idempotency-Key": idempotencyKey,
         },
       }
     );
