@@ -52,7 +52,7 @@ export default async function handler(req, res) {
   const { data: updatedData, error } = await supabase
     .from("subscriptions")
     .update({ status: "active" })
-    .eq("id", subscriptionId)
+    .eq("subscription_id", subscriptionId)
     .select(); // remove o .single()
 
   if (error) {
