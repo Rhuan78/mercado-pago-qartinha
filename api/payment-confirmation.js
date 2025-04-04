@@ -19,8 +19,12 @@ const sendEmailWithBrevo = async (toEmail) => {
       name: "Qartinha",
       email: "contato@qartinha.com.br",
     },
+    replyTo: {
+      name: "Qartinha",
+      email: "contato@qartinha.com.br", // <- evita seu e-mail pessoal como reply
+    },
     to: [{ email: toEmail }],
-    templateId: 3, // Template "Confirmação de compra"
+    templateId: 3,
   };
 
   try {
