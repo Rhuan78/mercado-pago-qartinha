@@ -74,7 +74,7 @@ export default async function handler(req, res) {
       const { error } = await supabase
         .from("subscriptions")
         .delete()
-        .eq("id", subscriptionId);
+        .eq("subscription_id", subscriptionId);
 
       if (error) {
         console.error("❌ Erro ao excluir assinatura:", error);
