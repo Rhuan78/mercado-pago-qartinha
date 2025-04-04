@@ -19,15 +19,16 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Método não permitido" });
   }
 
-  const { id, topic } = req.body;
+  const paymentId = req.body?.data?.id;
+  const topic = req.body?.type;
 
-  if (topic !== "payment" || !id) {
-    return res.status(400).json({ error: "Webhook inválido" });
+  if (topic !== "payment" || !paymentId) {
+    return res.status(400).json({ error: "Dados inválidos na notificação" });
   }
 
   try {
     const { data: payment } = await axios.get(
-      `https://api.mercadopago.com/v1/payments/${id}`,
+      `https://api.mercadopago.com/v1/payments/${paymentId}`,
       {
         headers: {
           Authorization: `Bearer ${process.env.MERCADO_PAGO_ACCESS_TOKEN}`,
@@ -73,6 +74,7 @@ export default async function handler(req, res) {
     }
 
     return res.status(200).json({ message: "Pagamento ainda não aprovado" });
+
   } catch (error) {
     console.error("Erro no webhook:", error.response?.data || error.message);
     return res.status(500).json({ error: "Erro interno ao processar webhook" });
