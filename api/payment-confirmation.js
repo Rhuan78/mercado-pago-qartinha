@@ -69,7 +69,7 @@ export default async function handler(req, res) {
 
       // ✅ Enviar WhatsApp via CallMeBot
       const whatsappMessage = `✅ Nova assinatura confirmada!\nPlano: ${description}\nEmail: ${payment.payer?.email || "desconhecido"}`;
-      const phoneNumber = "5544991012085"; // Exemplo: 5591999999999
+      const phoneNumber = "554491012085"; // Exemplo: 5591999999999
       const apiKey = process.env.CALLMEBOT_API_KEY;
 
       try {
