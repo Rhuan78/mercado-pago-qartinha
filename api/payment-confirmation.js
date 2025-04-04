@@ -12,6 +12,31 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+// Função para enviar e-mail via Brevo
+const sendEmailWithBrevo = async (toEmail) => {
+  const emailData = {
+    sender: {
+      name: "Qartinha",
+      email: "contato@qartinha.com.br",
+    },
+    to: [{ email: toEmail }],
+    templateId: 3, // Template "Confirmação de compra"
+  };
+
+  try {
+    const response = await axios.post("https://api.brevo.com/v3/smtp/email", emailData, {
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": process.env.BREVO_API_KEY,
+      },
+    });
+
+    console.log("📧 E-mail enviado com sucesso:", response.data);
+  } catch (err) {
+    console.error("❌ Erro ao enviar e-mail:", err.response?.data || err.message);
+  }
+};
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
 
@@ -52,7 +77,7 @@ export default async function handler(req, res) {
       const { data: updatedData, error } = await supabase
         .from("subscriptions")
         .update({ status: "active" })
-        .eq("subscription_id", subscriptionId) // <- corrigido aqui
+        .eq("subscription_id", subscriptionId)
         .select();
 
       if (error) {
@@ -65,11 +90,17 @@ export default async function handler(req, res) {
         return res.status(200).json({ warning: "Nenhuma linha atualizada. ID pode não existir." });
       }
 
-      console.log("✅ Assinatura ativada com sucesso:", updatedData[0]);
+      const customerEmail = updatedData[0]?.customer_email;
 
-      // ✅ Enviar WhatsApp via CallMeBot
+      if (customerEmail) {
+        await sendEmailWithBrevo(customerEmail);
+      } else {
+        console.warn("⚠️ E-mail do cliente não encontrado na assinatura:", subscriptionId);
+      }
+
+      // WhatsApp via CallMeBot
       const whatsappMessage = `✅ Nova assinatura confirmada!\nPlano: ${description}\nEmail: ${payment.payer?.email || "desconhecido"}`;
-      const phoneNumber = "554491012085"; // Exemplo: 5591999999999
+      const phoneNumber = "554491012085";
       const apiKey = process.env.CALLMEBOT_API_KEY;
 
       try {
