@@ -49,26 +49,26 @@ export default async function handler(req, res) {
     console.log("🔍 subscription_id extraído:", subscriptionId);
 
     if (payment.status === "approved") {
-      const { data: updatedData, error } = await supabase
-        .from("subscriptions")
-        .update({ status: "active" })
-        .eq("id", subscriptionId)
-        .select()
-        .single();
+  const { data: updatedData, error } = await supabase
+    .from("subscriptions")
+    .update({ status: "active" })
+    .eq("id", subscriptionId)
+    .select(); // remove o .single()
 
-      if (error) {
-        console.error("❌ Erro ao ativar assinatura:", error);
-        return res.status(500).json({ error: "Erro ao ativar assinatura" });
-      }
+  if (error) {
+    console.error("❌ Erro ao ativar assinatura:", error);
+    return res.status(500).json({ error: "Erro ao ativar assinatura" });
+  }
 
-      if (!updatedData) {
-        console.warn("⚠️ Nenhuma linha foi atualizada. Verifique se o ID existe:", subscriptionId);
-        return res.status(200).json({ warning: "Nenhuma linha atualizada. ID pode não existir." });
-      }
+  if (!updatedData || updatedData.length === 0) {
+    console.warn("⚠️ Nenhuma linha foi atualizada. Verifique se o ID existe:", subscriptionId);
+    return res.status(200).json({ warning: "Nenhuma linha atualizada. ID pode não existir." });
+  }
 
-      console.log("✅ Assinatura ativada com sucesso:", updatedData);
-      return res.status(200).json({ success: true });
-    }
+  console.log("✅ Assinatura ativada com sucesso:", updatedData[0]);
+  return res.status(200).json({ success: true });
+}
+
 
     if (["cancelled", "rejected", "expired"].includes(payment.status)) {
       const { error } = await supabase
