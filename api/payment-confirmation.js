@@ -82,7 +82,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true });
     }
 
-    if (["cancelled", "rejected", "expired"].includes(payment.status)) {
+    if (["cancelled", "rejected", "expired", "refunded"].includes(payment.status)) {
       const { error } = await supabase
         .from("subscriptions")
         .delete()
