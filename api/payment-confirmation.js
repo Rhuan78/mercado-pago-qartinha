@@ -49,26 +49,38 @@ export default async function handler(req, res) {
     console.log("🔍 subscription_id extraído:", subscriptionId);
 
     if (payment.status === "approved") {
-  const { data: updatedData, error } = await supabase
-    .from("subscriptions")
-    .update({ status: "active" })
-    .eq("subscription_id", subscriptionId)
-    .select(); // remove o .single()
+      const { data: updatedData, error } = await supabase
+        .from("subscriptions")
+        .update({ status: "active" })
+        .eq("subscription_id", subscriptionId) // <- corrigido aqui
+        .select();
 
-  if (error) {
-    console.error("❌ Erro ao ativar assinatura:", error);
-    return res.status(500).json({ error: "Erro ao ativar assinatura" });
-  }
+      if (error) {
+        console.error("❌ Erro ao ativar assinatura:", error);
+        return res.status(500).json({ error: "Erro ao ativar assinatura" });
+      }
 
-  if (!updatedData || updatedData.length === 0) {
-    console.warn("⚠️ Nenhuma linha foi atualizada. Verifique se o ID existe:", subscriptionId);
-    return res.status(200).json({ warning: "Nenhuma linha atualizada. ID pode não existir." });
-  }
+      if (!updatedData || updatedData.length === 0) {
+        console.warn("⚠️ Nenhuma linha foi atualizada. Verifique se o ID existe:", subscriptionId);
+        return res.status(200).json({ warning: "Nenhuma linha atualizada. ID pode não existir." });
+      }
 
-  console.log("✅ Assinatura ativada com sucesso:", updatedData[0]);
-  return res.status(200).json({ success: true });
-}
+      console.log("✅ Assinatura ativada com sucesso:", updatedData[0]);
 
+      // ✅ Enviar WhatsApp via CallMeBot
+      const whatsappMessage = `✅ Nova assinatura confirmada!\nPlano: ${description}\nEmail: ${payment.payer?.email || "desconhecido"}`;
+      const phoneNumber = "5544991012085"; // Exemplo: 5591999999999
+      const apiKey = process.env.CALLMEBOT_API_KEY;
+
+      try {
+        await axios.get(`https://api.callmebot.com/whatsapp.php?phone=${phoneNumber}&text=${encodeURIComponent(whatsappMessage)}&apikey=${apiKey}`);
+        console.log("📲 Mensagem enviada no WhatsApp");
+      } catch (err) {
+        console.error("❌ Erro ao enviar WhatsApp:", err.message);
+      }
+
+      return res.status(200).json({ success: true });
+    }
 
     if (["cancelled", "rejected", "expired"].includes(payment.status)) {
       const { error } = await supabase
